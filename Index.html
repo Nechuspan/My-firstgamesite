@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>С 8 Марта, Мамочка!</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            /* Фон. Если картинка не загрузится, будет красивый нежно-зеленый цвет травы */
+            background: url('https://ibb.co/N6TxFC9h') center/cover no-repeat, #a8e6cf; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 26px;
+            font-weight: bold;
+            color: #d81b60;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            z-index: 10;
+            text-align: center;
+        }
+
+        .item {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            animation: float 3s infinite ease-in-out alternate;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .item:active {
+            transform: scale(0.7);
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(-5deg); }
+            100% { transform: translateY(-30px) rotate(5deg); }
+        }
+
+        #modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 240, 245, 0.95);
+            z-index: 20;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        #modal h1 {
+            font-size: 60px;
+            color: #d81b60;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(216, 27, 96, 0.3);
+            padding: 0 20px;
+        }
+
+        #modal p {
+            font-size: 28px;
+            color: #333;
+            max-width: 800px;
+            line-height: 1.5;
+            padding: 0 20px;
+        }
+
+        .heart-btn {
+            margin-top: 40px;
+            padding: 15px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            background: #d81b60;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(216, 27, 96, 0.4);
+            transition: background 0.3s, transform 0.3s;
+        }
+
+        .heart-btn:hover {
+            background: #ad144b;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="ui">Собери 8 чего то: <span id="score">0</span> / 8</div>
+    <div id="game-container"></div>
+
+    <div id="modal">
+        <h1>С 8 марта любимая мамочка</h1>
+        <p>желаю тебе счастья, здоровья и всего самого лучшего, чтобы Арина была сытой но не жирной, и поздравляю тебя с 8 мартом (от Саши)</p>
+        <button class="heart-btn" onclick="location.reload()">Сыграть еще раз</button>
+    </div>
+
+    <script>
+        // Ссылки на картинки и запасные эмодзи
+        const itemsData = [
+            { url: 'https://ibb.co/W4ZB2dsp', emoji: '💖' },
+            { url: 'https://ibb.co/mVNBsqzw', emoji: '🌷' },
+            { url: 'https://ibb.co/B5dF35Yk', emoji: '🎁' }
+        ];
+        
+        let score = 0;
+        const maxScore = 8; 
+        const container = document.getElementById('game-container');
+        const scoreDisplay = document.getElementById('score');
+        const modal = document.getElementById('modal');
+
+        function createItem() {
+            if (score >= maxScore) return;
+
+            const item = document.createElement('div');
+            item.className = 'item';
+            
+            // Случайная позиция на экране
+            const x = Math.random() * (window.innerWidth - 100) + 10;
+            const y = Math.random() * (window.innerHeight - 150) + 80; 
+            item.style.left = x + 'px';
+            item.style.top = y + 'px';
+
+            // Выбираем случайную картинку
+            const data = itemsData[Math.floor(Math.random() * itemsData.length)];
+            
+            // Вставляем картинку. Если ссылка не сработает, покажется эмодзи
+            item.innerHTML = `
+                <img src="${data.url}" alt="Сюрприз" 
+                style="width:100%; height:100%; object-fit:contain; pointer-events:none;" 
+                onerror="this.style.display='none'; this.parentElement.innerText='${data.emoji}'; this.parentElement.style.fontSize='50px';">
+            `;
+
+            // Логика при клике
+            item.onclick = function() {
+                score++;
+                scoreDisplay.innerText = score;
+                item.remove(); // Удаляем пойманный сюрприз
+                
+                if (score < maxScore) {
+                    createItem(); // Создаем новый, пока не соберем 8
+                } else {
+                    // Если собрали 8, показываем поздравление
+                    setTimeout(() => {
+                        modal.style.display = 'flex';
+                    }, 400);
+                }
+            };
+
+            container.appendChild(item);
+        }
+
+        // Запускаем первые 6 элементов на экран одновременно
+        for(let i = 0; i < 6; i++) {
+            createItem();
+        }
+    </script>
+
+</body>
+</html>
